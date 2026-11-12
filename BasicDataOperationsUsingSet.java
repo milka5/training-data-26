@@ -1,105 +1,67 @@
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
- * Клас BasicDataOperationsUsingSet реалізує операції з множиною HashSet для LocalDateTime.
- *
- * <p>Методи класу:</p>
- * <ul>
- *   <li>{@link #executeDataAnalysis()} - Запускає аналіз даних.</li>
- *   <li>{@link #findInSet()} - Пошук значення в множині LocalDateTime.</li>
- *   <li>{@link #locateMinMaxInSet()} - Знаходить мінімальне і максимальне значення в множині.</li>
- *   <li>{@link #analyzeDuplicates()} - Порівнює кількість вхідних значень і елементів множини.</li>
- * </ul>
+ * Клас BasicDataOperationsUsingSet реалізує операції з множиною TreeSet для Byte.
  */
 public class BasicDataOperationsUsingSet {
-    LocalDateTime dateTimeValueToSearch;
+    Byte valueToSearch;
     int sourceValueCount;
-    Set<LocalDateTime> dateTimeSet = new HashSet<>();
+    Set<Byte> dataSet = new TreeSet<>();
 
-    /**
-     * Конструктор, який iнiцiалiзує об'єкт з готовими даними.
-     *
-     * @param dateTimeValueToSearch Значення для пошуку
-     * @param dateTimeArray Масив LocalDateTime
-     */
-    BasicDataOperationsUsingSet(LocalDateTime dateTimeValueToSearch, LocalDateTime[] dateTimeArray) {
-        this.dateTimeValueToSearch = dateTimeValueToSearch;
-        this.sourceValueCount = dateTimeArray.length;
-        this.dateTimeSet = new HashSet<>(Arrays.asList(dateTimeArray));
+    BasicDataOperationsUsingSet(Byte valueToSearch, Byte[] dataArray) {
+        this.valueToSearch = valueToSearch;
+        this.sourceValueCount = dataArray.length;
+        this.dataSet = new TreeSet<>(Arrays.asList(dataArray));
     }
 
-    /**
-     * Запускає комплексний аналіз даних з використанням множини HashSet.
-     *
-     * Метод виконує пошук, визначення граничних значень і аналіз повторів у множині LocalDateTime.
-     */
     public void executeDataAnalysis() {
         findInSet();
         locateMinMaxInSet();
         analyzeDuplicates();
 
-        // зберігаємо до файлу відсортовані унікальні значення з HashSet (без повторів)
-        LocalDateTime[] sortedSetValues = dateTimeSet.toArray(new LocalDateTime[0]);
+        Byte[] sortedSetValues = dataSet.toArray(new Byte[0]);
         Arrays.sort(sortedSetValues);
         DataFileHandler.writeArrayToFile(sortedSetValues, BasicDataOperations.SORTED_FILE_PREFIX + ".set.data");
     }
 
-    /**
-     * Здійснює пошук конкретного значення в множині дати та часу.
-     */
     private void findInSet() {
-        // назву операції будуємо до заміру, щоб склеювання рядка не потрапило у вимір
-        String operationName = "пошук елемента '" + dateTimeValueToSearch + "' в HashSet<LocalDateTime>";
+        String operationName = "пошук елемента '" + valueToSearch + "' в TreeSet<Byte>";
         long timeStart = System.nanoTime();
 
-        // HashSet не перебирає елементи. contains() обчислює hashCode() шуканої дати,
-        // за ним одразу визначає «кошик» (bucket) внутрішньої хеш-таблиці і через equals()
-        // порівнює лише ті кілька елементів, що потрапили в цей кошик.
-        // У середньому це O(1) незалежно від кількості елементів.
-        boolean elementExists = this.dateTimeSet.contains(dateTimeValueToSearch);
+        boolean elementExists = this.dataSet.contains(valueToSearch);
 
         PerformanceTracker.displayOperationTime(timeStart, operationName);
 
         if (elementExists) {
-            System.out.println("Елемент '" + dateTimeValueToSearch + "' знайдено в HashSet");
+            System.out.println("Елемент '" + valueToSearch + "' знайдено в TreeSet");
         } else {
-            System.out.println("Елемент '" + dateTimeValueToSearch + "' відсутній в HashSet.");
+            System.out.println("Елемент '" + valueToSearch + "' відсутній в TreeSet.");
         }
     }
 
-    /**
-     * Визначає найменше та найбільше значення в множині LocalDateTime.
-     */
     private void locateMinMaxInSet() {
-        if (dateTimeSet == null || dateTimeSet.isEmpty()) {
-            System.out.println("HashSet є пустим або не ініціалізованим.");
+        if (dataSet == null || dataSet.isEmpty()) {
+            System.out.println("TreeSet є пустим або не ініціалізованим.");
             return;
         }
 
         long timeStart = System.nanoTime();
 
-        // HashSet розкладає елементи за хеш-кодами, а не за порядком дат, тому найменша
-        // і найбільша дати можуть лежати будь-де. Collections.min() і Collections.max()
-        // обходять усю множину ітератором і порівнюють елементи через compareTo(); кожен виклик O(n).
-        LocalDateTime minValue = Collections.min(dateTimeSet);
-        LocalDateTime maxValue = Collections.max(dateTimeSet);
+        Byte minValue = Collections.min(dataSet);
+        Byte maxValue = Collections.max(dataSet);
 
-        PerformanceTracker.displayOperationTime(timeStart, "визначення мiнiмальної i максимальної дати в HashSet<LocalDateTime>");
+        PerformanceTracker.displayOperationTime(timeStart, "визначення мiнiмального i максимального значення в TreeSet<Byte>");
 
-        System.out.println("Найменше значення в HashSet: " + minValue);
-        System.out.println("Найбільше значення в HashSet: " + maxValue);
+        System.out.println("Найменше значення в TreeSet: " + minValue);
+        System.out.println("Найбільше значення в TreeSet: " + maxValue);
     }
 
-    /**
-     * Порівнює кількість вхідних значень і елементів множини: різниця — це відкинуті повтори.
-     */
     private void analyzeDuplicates() {
         System.out.println("Кiлькiсть вхiдних значень: " + sourceValueCount);
-        System.out.println("Кiлькiсть елементiв в HashSet: " + dateTimeSet.size());
-        System.out.println("Повторних входжень, вiдкинутих HashSet: " + (sourceValueCount - dateTimeSet.size()));
+        System.out.println("Кiлькiсть елементiв в TreeSet: " + dataSet.size());
+        System.out.println("Повторних входжень, вiдкинутих TreeSet: " + (sourceValueCount - dataSet.size()));
     }
 }

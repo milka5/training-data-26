@@ -1,41 +1,33 @@
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-/** Координатор пошуку точного значення та значень у заданому інтервалі. */
+/** Координатор пошуку точного значення та значень, менших за заданий поріг. */
 public class BasicDataOperations {
-    static final String PATH_TO_DATA_FILE = "list/LocalDateTime.data";
-    static final String SORTED_FILE_PREFIX = "list/LocalDateTime.sorted";
+    static final String PATH_TO_DATA_FILE = "list/byte.data";
+    static final String SORTED_FILE_PREFIX = "list/byte.sorted";
 
     public static void main(String[] args) {
-        if (args.length != 3 && args.length != 4) {
-            System.err.println("Використання: java BasicDataOperations <значення> <нижня-межа> <верхня-межа> [файл-даних]");
-            System.err.println("Приклад: java BasicDataOperations 2026-06-21T09:46:21 2026-06-01T00:00:00 2026-08-31T23:59:59");
+        if (args.length != 2 && args.length != 3) {
+            System.err.println("Використання: java BasicDataOperations <значення> <поріг> [файл-даних]");
+            System.err.println("Приклад: java BasicDataOperations \"-64\" \"0\"");
             System.exit(1);
             return;
         }
-        LocalDateTime searched;
-        LocalDateTime lower;
-        LocalDateTime upper;
+        Byte searched;
+        Byte threshold;
         try {
-            searched = LocalDateTime.parse(args[0], DateTimeFormatter.ISO_DATE_TIME);
-            lower = LocalDateTime.parse(args[1], DateTimeFormatter.ISO_DATE_TIME);
-            upper = LocalDateTime.parse(args[2], DateTimeFormatter.ISO_DATE_TIME);
-            if (lower.isAfter(upper)) {
-                throw new IllegalArgumentException("Нижня межа перевищує верхню");
-            }
-        } catch (RuntimeException exception) {
-            System.err.println("Некоректні аргументи: " + exception.getMessage());
+            searched = Byte.valueOf(args[0]);
+            threshold = Byte.valueOf(args[1]);
+        } catch (NumberFormatException exception) {
+            System.err.println("Некоректні аргументи (очікуються числа типу Byte від -128 до 127): " + exception.getMessage());
             System.exit(1);
             return;
         }
 
-        String file = args.length == 4 ? args[3] : PATH_TO_DATA_FILE;
+        String file = args.length == 3 ? args[2] : PATH_TO_DATA_FILE;
         try {
-            LocalDateTime[] values = DataFileHandler.loadArrayFromFile(file);
+            Byte[] values = DataFileHandler.loadArrayFromFile(file);
             System.out.println("Точне значення для пошуку: " + searched);
             System.out.println("Завантажено значень: " + values.length);
             System.out.println("LIST");
-            new BasicDataOperationsUsingList(searched, values).executeDataOperations(lower, upper);
+            new BasicDataOperationsUsingList(searched, values).executeDataOperations(threshold);
             System.out.println("SET");
             new BasicDataOperationsUsingSet(searched, values).executeDataAnalysis();
             System.out.println("QUEUE");
