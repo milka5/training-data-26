@@ -1,494 +1,289 @@
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 
-/**
- * Клас BasicDataOperationsUsingMap реалізує операції з колекціями типу Map для зберігання пар ключ-значення.
- *
- * <p>Ключ - record {@link Oak} з характеристиками дуба, значення - місце зростання дуба.</p>
- *
- * <p>Операції, які виконуються для кожного типу Map:</p>
- * <ul>
- *   <li>пошук за ключем;</li>
- *   <li>пошук за значенням (сортування списку пар + binarySearch);</li>
- *   <li>виведення пар ключ-значення на консоль до і після сортування;</li>
- *   <li>сортування за ключами;</li>
- *   <li>визначення найменшого й найбільшого ключа;</li>
- *   <li>додавання пари ключ-значення;</li>
- *   <li>видалення за ключем;</li>
- *   <li>видалення за значенням.</li>
- * </ul>
- */
+record Viburnum(String variety, Double clusterWeight) implements Comparable<Viburnum> {
+    Viburnum {
+        Objects.requireNonNull(variety, "variety не може бути null");
+        Objects.requireNonNull(clusterWeight, "clusterWeight не може бути null");
+    }
+
+    /**
+     * Порівнює об'єкти Viburnum спочатку за сортом (variety) за спаданням,
+     * а за однакових сортів — за масою грона (clusterWeight) за спаданням.
+     */
+    @Override
+    public int compareTo(Viburnum other) {
+        int varietyComparison = other.variety.compareTo(this.variety);
+        if (varietyComparison != 0) {
+            return varietyComparison;
+        }
+        return other.clusterWeight.compareTo(this.clusterWeight);
+    }
+
+    @Override
+    public String toString() {
+        return "Viburnum{variety='" + variety + "', clusterWeight=" + clusterWeight + "}";
+    }
+}
+
 public class BasicDataOperationsUsingMap {
-    private static final Oak KEY_TO_SEARCH_AND_DELETE = new Oak("Дуб скельний", 120);
-    private static final Oak KEY_TO_ADD = new Oak("Дуб монгольський", 70);
+    private static final Comparator<Map.Entry<Viburnum, String>> CUSTOM_COMPARATOR =
+            Map.Entry.comparingByValue();
 
-    private static final String VALUE_TO_SEARCH_AND_DELETE = "Софіївка";
-    private static final String VALUE_TO_ADD = "Тростянець";
+    private static final Viburnum KEY_TO_SEARCH_AND_DELETE =
+            new Viburnum("Ульгень", 29.4);
+    private static final Viburnum KEY_TO_ADD =
+            new Viburnum("Ягідна", 26.0);
 
-    /**
-     * Компаратор для сортування Map.Entry за значеннями String (місцем зростання).
-     * Використовує природний порядок рядків - String.compareTo().
-     */
-    private static final Comparator<Map.Entry<Oak, String>> CUSTOM_COMPARATOR = Map.Entry.comparingByValue();
+    private static final String VALUE_TO_SEARCH_AND_DELETE = "Мирослав";
+    private static final String VALUE_TO_ADD = "Ганна";
 
-    private HashMap<Oak, String> hashMap;
-    private TreeMap<Oak, String> treeMap;
+    private final HashMap<Viburnum, String> hashMap;
+    private final Hashtable<Viburnum, String> hashtable;
 
-    /**
-     * Record Oak зберігає характеристики дуба: вид (species) і вік (age).
-     *
-     * <p>Record автоматично генерує:</p>
-     * <ul>
-     *   <li>приватні final поля species і age та канонічний конструктор;</li>
-     *   <li>методи доступу species() і age();</li>
-     *   <li>equals() і hashCode(), які враховують усі компоненти record (species і age).</li>
-     * </ul>
-     *
-     * <p>Вручну реалізовано:</p>
-     * <ul>
-     *   <li>compareTo() - природний порядок: вид за зростанням, потім вік за спаданням;</li>
-     *   <li>toString() - формат Oak{species='...', age=...}, доповнений хеш-кодом.</li>
-     * </ul>
-     *
-     * @param species вид дуба, наприклад "Дуб звичайний"
-     * @param age вік дерева, років
-     */
-    public record Oak(String species, Integer age) implements Comparable<Oak> {
-
-        /**
-         * Компактний конструктор перевіряє, що характеристики задані.
-         * Завдяки цьому в compareTo() не потрібно окремо обробляти значення null.
-         */
-        public Oak {
-            Objects.requireNonNull(species, "species не може бути null");
-            Objects.requireNonNull(age, "age не може бути null");
-        }
-
-        /**
-         * Порівнює цей дуб з іншим для визначення природного порядку сортування.
-         *
-         * <p>Критерій порівняння: вид (species) за зростанням, а для однакових видів - вік (age) за спаданням.</p>
-         *
-         * <p>Метод використовується:</p>
-         * <ul>
-         *   <li>TreeMap - для автоматичного впорядкування ключів;</li>
-         *   <li>Collections.sort() - для сортування списку ключів.</li>
-         * </ul>
-         *
-         * <p>Метод узгоджений з equals(): compareTo() повертає 0 тоді й лише тоді,
-         * коли species і age однакові, тобто коли equals() повертає true.</p>
-         *
-         * @param other дуб для порівняння
-         * @return від'ємне число, якщо цей дуб іде раніше за other; 0, якщо вони рівні;
-         *         додатне число, якщо цей дуб іде пізніше за other
-         */
-        @Override
-        public int compareTo(Oak other) {
-            // Спочатку порівнюємо за видом (за зростанням)
-            int speciesComparison = this.species.compareTo(other.species);
-            if (speciesComparison != 0) {
-                return speciesComparison;
-            }
-            // Якщо види однакові, порівнюємо за віком (за спаданням - other порівнюється з this)
-            return other.age.compareTo(this.age);
-        }
-
-        /**
-         * Повертає рядкове представлення дуба.
-         * Хеш-код додано, щоб у логах було видно, від чого залежить порядок елементів у HashMap.
-         *
-         * @return рядок у форматі Oak{species='...', age=..., hashCode=...}
-         */
-        @Override
-        public String toString() {
-            return "Oak{species='" + species + "', age=" + age + ", hashCode=" + hashCode() + "}";
-        }
-    }
-
-    /**
-     * Конструктор, який ініціалізує об'єкт готовими даними.
-     *
-     * @param hashMap HashMap з початковими даними (ключ: Oak, значення: місце зростання)
-     * @param treeMap TreeMap з початковими даними (ключ: Oak, значення: місце зростання)
-     */
-    BasicDataOperationsUsingMap(HashMap<Oak, String> hashMap, TreeMap<Oak, String> treeMap) {
+    public BasicDataOperationsUsingMap(HashMap<Viburnum, String> hashMap,
+                                       Hashtable<Viburnum, String> hashtable) {
         this.hashMap = hashMap;
-        this.treeMap = treeMap;
+        this.hashtable = hashtable;
     }
 
-    /**
-     * Виконує комплекс операцій з HashMap і TreeMap: пошук, виведення, сортування, додавання, видалення.
-     */
+    private void printVariantInfo() {
+        System.out.println("Варіант завдання:");
+        System.out.println("Назва record-класу рослини: Viburnum (калина)");
+        System.out.println("Характеристики рослини: сорт (String variety), маса грона (Double clusterWeight)");
+        System.out.println();
+        System.out.println("Сортування:");
+        System.out.println(" - сорт - за спаданням");
+        System.out.println(" - маса грона - за спаданням");
+        System.out.println();
+        System.out.println("Map<рослина, садівник/садівниця>:");
+        for (Map.Entry<Viburnum, String> entry : hashMap.entrySet()) {
+            System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
+        }
+        System.out.println();
+        System.out.println("Ключ/значення для додавання: " + KEY_TO_ADD + " -> " + VALUE_TO_ADD);
+        System.out.println("Ключ для пошуку і видалення: " + KEY_TO_SEARCH_AND_DELETE);
+        System.out.println("Значення для пошуку і видалення: " + VALUE_TO_SEARCH_AND_DELETE);
+        System.out.println("Порівняти продуктивність: HashMap з Hashtable");
+        System.out.println();
+    }
+
+    private void findByKeyInHashMap() {
+        long timeStart = System.nanoTime();
+        String value = hashMap.get(KEY_TO_SEARCH_AND_DELETE);
+        PerformanceTracker.displayOperationTime(timeStart, "пошук за ключем у HashMap");
+        System.out.println("Знайдено за ключем у HashMap " + KEY_TO_SEARCH_AND_DELETE + ": " + value);
+    }
+
+    private void findMinMaxKeyInHashMap() {
+        long timeStart = System.nanoTime();
+        if (hashMap.isEmpty()) {
+            PerformanceTracker.displayOperationTime(timeStart, "пошук min/max ключа в HashMap");
+            return;
+        }
+        Viburnum minKey = Collections.min(hashMap.keySet());
+        Viburnum maxKey = Collections.max(hashMap.keySet());
+        PerformanceTracker.displayOperationTime(timeStart, "пошук min/max ключа в HashMap");
+        System.out.println("Min ключ у HashMap: " + minKey + ", Max ключ у HashMap: " + maxKey);
+    }
+
+    private void printHashMap() {
+        long timeStart = System.nanoTime();
+        System.out.println("Вміст HashMap:");
+        for (Map.Entry<Viburnum, String> entry : hashMap.entrySet()) {
+            System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
+        }
+        PerformanceTracker.displayOperationTime(timeStart, "виведення HashMap");
+    }
+
+    private void sortHashMapByValue() {
+        long timeStart = System.nanoTime();
+        List<Map.Entry<Viburnum, String>> entries = new ArrayList<>(hashMap.entrySet());
+        entries.sort(CUSTOM_COMPARATOR);
+        PerformanceTracker.displayOperationTime(timeStart, "сортування HashMap за значенням");
+    }
+
+    private void addEntryToHashMap() {
+        long timeStart = System.nanoTime();
+        hashMap.put(KEY_TO_ADD, VALUE_TO_ADD);
+        PerformanceTracker.displayOperationTime(timeStart, "додавання елемента в HashMap");
+        System.out.println("Додано запис у HashMap: " + KEY_TO_ADD + " -> " + VALUE_TO_ADD);
+    }
+
+    private void removeByKeyFromHashMap() {
+        long timeStart = System.nanoTime();
+        String removed = hashMap.remove(KEY_TO_SEARCH_AND_DELETE);
+        PerformanceTracker.displayOperationTime(timeStart, "видалення за ключем з HashMap");
+        System.out.println("Видалено з HashMap за ключем " + KEY_TO_SEARCH_AND_DELETE + ": " + removed);
+    }
+
+    private void removeByValueFromHashMap() {
+        long timeStart = System.nanoTime();
+        List<Viburnum> keysToRemove = new ArrayList<>();
+        for (Map.Entry<Viburnum, String> entry : hashMap.entrySet()) {
+            if (VALUE_TO_SEARCH_AND_DELETE.equals(entry.getValue())) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+        for (Viburnum key : keysToRemove) {
+            hashMap.remove(key);
+        }
+        PerformanceTracker.displayOperationTime(timeStart, "видалення за значенням з HashMap");
+        System.out.println("Видалено з HashMap " + keysToRemove.size()
+                + " записів з садівником (садівницею) '" + VALUE_TO_SEARCH_AND_DELETE + "'");
+    }
+
+    private void findByKeyInHashtable() {
+        long timeStart = System.nanoTime();
+        String value = hashtable.get(KEY_TO_SEARCH_AND_DELETE);
+        PerformanceTracker.displayOperationTime(timeStart, "пошук за ключем у Hashtable");
+        System.out.println("Знайдено за ключем у Hashtable " + KEY_TO_SEARCH_AND_DELETE + ": " + value);
+    }
+
+    private void findMinMaxKeyInHashtable() {
+        long timeStart = System.nanoTime();
+        if (hashtable.isEmpty()) {
+            PerformanceTracker.displayOperationTime(timeStart, "пошук min/max ключа в Hashtable");
+            return;
+        }
+        Viburnum minKey = Collections.min(hashtable.keySet());
+        Viburnum maxKey = Collections.max(hashtable.keySet());
+        PerformanceTracker.displayOperationTime(timeStart, "пошук min/max ключа в Hashtable");
+        System.out.println("Min ключ у Hashtable: " + minKey + ", Max ключ у Hashtable: " + maxKey);
+    }
+
+    private void printHashtable() {
+        long timeStart = System.nanoTime();
+        System.out.println("Вміст Hashtable:");
+        for (Map.Entry<Viburnum, String> entry : hashtable.entrySet()) {
+            System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
+        }
+        PerformanceTracker.displayOperationTime(timeStart, "виведення Hashtable");
+    }
+
+    private void sortHashtable() {
+        long timeStart = System.nanoTime();
+        List<Viburnum> sortedKeys = new ArrayList<>(hashtable.keySet());
+        Collections.sort(sortedKeys);
+
+        Hashtable<Viburnum, String> sortedHashtable = new Hashtable<>();
+        for (Viburnum key : sortedKeys) {
+            sortedHashtable.put(key, hashtable.get(key));
+        }
+        hashtable.clear();
+        hashtable.putAll(sortedHashtable);
+
+        PerformanceTracker.displayOperationTime(timeStart, "сортування Hashtable за ключами");
+    }
+
+    private void addEntryToHashtable() {
+        long timeStart = System.nanoTime();
+        hashtable.put(KEY_TO_ADD, VALUE_TO_ADD);
+        PerformanceTracker.displayOperationTime(timeStart, "додавання елемента в Hashtable");
+        System.out.println("Додано запис у Hashtable: " + KEY_TO_ADD + " -> " + VALUE_TO_ADD);
+    }
+
+    private void removeByKeyFromHashtable() {
+        long timeStart = System.nanoTime();
+        String removed = hashtable.remove(KEY_TO_SEARCH_AND_DELETE);
+        PerformanceTracker.displayOperationTime(timeStart, "видалення за ключем з Hashtable");
+        System.out.println("Видалено з Hashtable за ключем " + KEY_TO_SEARCH_AND_DELETE + ": " + removed);
+    }
+
+    private void removeByValueFromHashtable() {
+        long timeStart = System.nanoTime();
+        List<Viburnum> keysToRemove = new ArrayList<>();
+        for (Map.Entry<Viburnum, String> entry : hashtable.entrySet()) {
+            if (VALUE_TO_SEARCH_AND_DELETE.equals(entry.getValue())) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+        for (Viburnum key : keysToRemove) {
+            hashtable.remove(key);
+        }
+        PerformanceTracker.displayOperationTime(timeStart, "видалення за значенням з Hashtable");
+        System.out.println("Видалено з Hashtable " + keysToRemove.size()
+                + " записів з садівником (садівницею) '" + VALUE_TO_SEARCH_AND_DELETE + "'");
+    }
+
+    private void findByValueInHashMap() {
+        long timeStart = System.nanoTime();
+        List<Map.Entry<Viburnum, String>> entries = new ArrayList<>(hashMap.entrySet());
+        entries.sort(CUSTOM_COMPARATOR);
+        Map.Entry<Viburnum, String> target = Map.entry(KEY_TO_SEARCH_AND_DELETE, VALUE_TO_SEARCH_AND_DELETE);
+        int index = Collections.binarySearch(entries, target, CUSTOM_COMPARATOR);
+        PerformanceTracker.displayOperationTime(timeStart, "пошук за значенням у HashMap");
+        System.out.println("Пошук за значенням '" + VALUE_TO_SEARCH_AND_DELETE
+                + "' у HashMap (binarySearch index): " + index);
+    }
+
+    private void findByValueInHashtable() {
+        long timeStart = System.nanoTime();
+        List<Map.Entry<Viburnum, String>> entries = new ArrayList<>(hashtable.entrySet());
+        entries.sort(CUSTOM_COMPARATOR);
+        Map.Entry<Viburnum, String> target = Map.entry(KEY_TO_SEARCH_AND_DELETE, VALUE_TO_SEARCH_AND_DELETE);
+        int index = Collections.binarySearch(entries, target, CUSTOM_COMPARATOR);
+        PerformanceTracker.displayOperationTime(timeStart, "пошук за значенням у Hashtable");
+        System.out.println("Пошук за значенням '" + VALUE_TO_SEARCH_AND_DELETE
+                + "' у Hashtable (binarySearch index): " + index);
+    }
+
     public void executeDataOperations() {
-        // Спочатку працюємо з HashMap
-        System.out.println("========= Операції з HashMap =========");
-        System.out.println("Початковий розмір HashMap: " + hashMap.size());
+        printVariantInfo();
 
-        // Пошук до сортування
+        // 1. Блок для HashMap
         findByKeyInHashMap();
         findByValueInHashMap();
         findMinMaxKeyInHashMap();
-
         printHashMap();
-        sortHashMap();
+        sortHashMapByValue();
         printHashMap();
-
-        // Пошук після сортування
         findByKeyInHashMap();
         findByValueInHashMap();
         findMinMaxKeyInHashMap();
-
         addEntryToHashMap();
-
         removeByKeyFromHashMap();
         removeByValueFromHashMap();
 
-        System.out.println("Кінцевий розмір HashMap: " + hashMap.size());
-
-        // Потім обробляємо TreeMap
-        System.out.println("\n\n========= Операції з TreeMap =========");
-        System.out.println("Початковий розмір TreeMap: " + treeMap.size());
-
-        findByKeyInTreeMap();
-        findByValueInTreeMap();
-        findMinMaxKeyInTreeMap();
-
-        printTreeMap();
-
-        addEntryToTreeMap();
-
-        removeByKeyFromTreeMap();
-        removeByValueFromTreeMap();
-
-        System.out.println("Кінцевий розмір TreeMap: " + treeMap.size());
+        // 2. Блок для Hashtable
+        findByKeyInHashtable();
+        findByValueInHashtable();
+        findMinMaxKeyInHashtable();
+        printHashtable();
+        sortHashtable();
+        printHashtable();
+        findByKeyInHashtable();
+        findByValueInHashtable();
+        findMinMaxKeyInHashtable();
+        addEntryToHashtable();
+        removeByKeyFromHashtable();
+        removeByValueFromHashtable();
     }
 
-    // ===== Методи для HashMap =====
-
-    /**
-     * Виводить вміст HashMap.
-     * HashMap не гарантує жодного порядку елементів: він залежить від hashCode() ключів.
-     */
-    private void printHashMap() {
-        System.out.println("\n=== Пари ключ-значення в HashMap ===");
-        long timeStart = System.nanoTime();
-
-        for (Map.Entry<Oak, String> entry : hashMap.entrySet()) {
-            System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
-        }
-
-        PerformanceTracker.displayOperationTime(timeStart, "виведення пар ключ-значення в HashMap");
-    }
-
-    /**
-     * Сортує HashMap за ключами.
-     * Використовує Collections.sort() з природним порядком Oak (Oak.compareTo())
-     * і перезаписує hashMap новою HashMap, заповненою у відсортованому порядку.
-     *
-     * <p>Увага: HashMap не зберігає порядок додавання, тому після сортування порядок
-     * виведення не зміниться. Зберегти відсортований порядок може LinkedHashMap.</p>
-     */
-    private void sortHashMap() {
-        long timeStart = System.nanoTime();
-
-        // Створюємо список ключів і сортуємо за природним порядком Oak
-        List<Oak> sortedKeys = new ArrayList<>(hashMap.keySet());
-        Collections.sort(sortedKeys);
-
-        // Створюємо нову HashMap і додаємо пари у порядку відсортованих ключів
-        HashMap<Oak, String> sortedHashMap = new HashMap<>();
-        for (Oak key : sortedKeys) {
-            sortedHashMap.put(key, hashMap.get(key));
-        }
-
-        // Перезаписуємо оригінальну hashMap
-        hashMap = sortedHashMap;
-
-        PerformanceTracker.displayOperationTime(timeStart, "сортування HashMap за ключами");
-    }
-
-    /**
-     * Здійснює пошук елемента за ключем в HashMap.
-     * Використовує Oak.hashCode() для вибору кошика та Oak.equals() для порівняння ключів.
-     */
-    void findByKeyInHashMap() {
-        long timeStart = System.nanoTime();
-
-        boolean found = hashMap.containsKey(KEY_TO_SEARCH_AND_DELETE);
-
-        PerformanceTracker.displayOperationTime(timeStart, "пошук за ключем в HashMap");
-
-        if (found) {
-            String value = hashMap.get(KEY_TO_SEARCH_AND_DELETE);
-            System.out.println("Елемент з ключем '" + KEY_TO_SEARCH_AND_DELETE + "' знайдено. Місце зростання: " + value);
-        } else {
-            System.out.println("Елемент з ключем '" + KEY_TO_SEARCH_AND_DELETE + "' відсутній в HashMap.");
-        }
-    }
-
-    /**
-     * Здійснює пошук елемента за значенням в HashMap.
-     * Сортує список Map.Entry за значеннями та використовує бінарний пошук.
-     */
-    void findByValueInHashMap() {
-        long timeStart = System.nanoTime();
-
-        // Створюємо список пар та сортуємо його за значеннями
-        List<Map.Entry<Oak, String>> entries = new ArrayList<>(hashMap.entrySet());
-        Collections.sort(entries, CUSTOM_COMPARATOR);
-
-        // Тимчасова пара для пошуку: ключ не потрібен, порівнюється лише значення
-        Map.Entry<Oak, String> searchEntry = new AbstractMap.SimpleEntry<>(null, VALUE_TO_SEARCH_AND_DELETE);
-
-        int position = Collections.binarySearch(entries, searchEntry, CUSTOM_COMPARATOR);
-
-        PerformanceTracker.displayOperationTime(timeStart, "бінарний пошук за значенням в HashMap");
-
-        if (position >= 0) {
-            Map.Entry<Oak, String> foundEntry = entries.get(position);
-            System.out.println("Місце зростання '" + VALUE_TO_SEARCH_AND_DELETE + "' знайдено. Дуб: " + foundEntry.getKey());
-        } else {
-            System.out.println("Місце зростання '" + VALUE_TO_SEARCH_AND_DELETE + "' відсутнє в HashMap.");
-        }
-    }
-
-    /**
-     * Визначає найменший і найбільший ключі в HashMap.
-     * HashMap не зберігає порядок ключів, тому потрібен перебір усіх ключів - O(n),
-     * і сортування HashMap цього не змінює.
-     */
-    void findMinMaxKeyInHashMap() {
-        if (hashMap.isEmpty()) {
-            System.out.println("HashMap порожня: найменшого й найбільшого ключа немає.");
-            return;
-        }
-
-        long timeStart = System.nanoTime();
-
-        Oak minKey = Collections.min(hashMap.keySet());
-        Oak maxKey = Collections.max(hashMap.keySet());
-
-        PerformanceTracker.displayOperationTime(timeStart, "визначення найменшого й найбільшого ключа в HashMap");
-
-        System.out.println("Найменший ключ: " + minKey + ", найбільший ключ: " + maxKey);
-    }
-
-    /**
-     * Додає новий запис до HashMap.
-     */
-    void addEntryToHashMap() {
-        long timeStart = System.nanoTime();
-
-        hashMap.put(KEY_TO_ADD, VALUE_TO_ADD);
-
-        PerformanceTracker.displayOperationTime(timeStart, "додавання запису до HashMap");
-
-        System.out.println("Додано новий запис: дуб='" + KEY_TO_ADD + "', місце зростання='" + VALUE_TO_ADD + "'");
-    }
-
-    /**
-     * Видаляє запис з HashMap за ключем.
-     */
-    void removeByKeyFromHashMap() {
-        long timeStart = System.nanoTime();
-
-        String removedValue = hashMap.remove(KEY_TO_SEARCH_AND_DELETE);
-
-        PerformanceTracker.displayOperationTime(timeStart, "видалення за ключем з HashMap");
-
-        if (removedValue != null) {
-            System.out.println("Видалено запис з ключем '" + KEY_TO_SEARCH_AND_DELETE + "'. Місце зростання було: " + removedValue);
-        } else {
-            System.out.println("Ключ '" + KEY_TO_SEARCH_AND_DELETE + "' не знайдено для видалення.");
-        }
-    }
-
-    /**
-     * Видаляє записи з HashMap за значенням.
-     */
-    void removeByValueFromHashMap() {
-        long timeStart = System.nanoTime();
-
-        List<Oak> keysToRemove = new ArrayList<>();
-        for (Map.Entry<Oak, String> entry : hashMap.entrySet()) {
-            if (VALUE_TO_SEARCH_AND_DELETE.equals(entry.getValue())) {
-                keysToRemove.add(entry.getKey());
-            }
-        }
-
-        for (Oak key : keysToRemove) {
-            hashMap.remove(key);
-        }
-
-        PerformanceTracker.displayOperationTime(timeStart, "видалення за значенням з HashMap");
-
-        System.out.println("Видалено " + keysToRemove.size() + " записів з місцем зростання '" + VALUE_TO_SEARCH_AND_DELETE + "'");
-    }
-
-    // ===== Методи для TreeMap =====
-
-    /**
-     * Виводить вміст TreeMap.
-     * TreeMap завжди впорядкована за ключами (вид за зростанням, вік за спаданням).
-     */
-    private void printTreeMap() {
-        System.out.println("\n=== Пари ключ-значення в TreeMap ===");
-        long timeStart = System.nanoTime();
-
-        for (Map.Entry<Oak, String> entry : treeMap.entrySet()) {
-            System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
-        }
-
-        PerformanceTracker.displayOperationTime(timeStart, "виведення пар ключ-значення в TreeMap");
-    }
-
-    /**
-     * Здійснює пошук елемента за ключем в TreeMap.
-     * Використовує Oak.compareTo() для навігації по червоно-чорному дереву.
-     */
-    void findByKeyInTreeMap() {
-        long timeStart = System.nanoTime();
-
-        boolean found = treeMap.containsKey(KEY_TO_SEARCH_AND_DELETE);
-
-        PerformanceTracker.displayOperationTime(timeStart, "пошук за ключем в TreeMap");
-
-        if (found) {
-            String value = treeMap.get(KEY_TO_SEARCH_AND_DELETE);
-            System.out.println("Елемент з ключем '" + KEY_TO_SEARCH_AND_DELETE + "' знайдено. Місце зростання: " + value);
-        } else {
-            System.out.println("Елемент з ключем '" + KEY_TO_SEARCH_AND_DELETE + "' відсутній в TreeMap.");
-        }
-    }
-
-    /**
-     * Здійснює пошук елемента за значенням в TreeMap.
-     * Сортує список Map.Entry за значеннями та використовує бінарний пошук.
-     */
-    void findByValueInTreeMap() {
-        long timeStart = System.nanoTime();
-
-        List<Map.Entry<Oak, String>> entries = new ArrayList<>(treeMap.entrySet());
-        Collections.sort(entries, CUSTOM_COMPARATOR);
-
-        Map.Entry<Oak, String> searchEntry = new AbstractMap.SimpleEntry<>(null, VALUE_TO_SEARCH_AND_DELETE);
-
-        int position = Collections.binarySearch(entries, searchEntry, CUSTOM_COMPARATOR);
-
-        PerformanceTracker.displayOperationTime(timeStart, "бінарний пошук за значенням в TreeMap");
-
-        if (position >= 0) {
-            Map.Entry<Oak, String> foundEntry = entries.get(position);
-            System.out.println("Місце зростання '" + VALUE_TO_SEARCH_AND_DELETE + "' знайдено. Дуб: " + foundEntry.getKey());
-        } else {
-            System.out.println("Місце зростання '" + VALUE_TO_SEARCH_AND_DELETE + "' відсутнє в TreeMap.");
-        }
-    }
-
-    /**
-     * Визначає найменший і найбільший ключі в TreeMap.
-     * TreeMap реалізує SequencedMap (Java 21) і впорядкована за Oak.compareTo(),
-     * тому перший і останній записи - це найменший і найбільший ключі; перебір не потрібен.
-     */
-    void findMinMaxKeyInTreeMap() {
-        if (treeMap.isEmpty()) {
-            System.out.println("TreeMap порожня: найменшого й найбільшого ключа немає.");
-            return;
-        }
-
-        long timeStart = System.nanoTime();
-
-        Oak minKey = treeMap.firstEntry().getKey();
-        Oak maxKey = treeMap.lastEntry().getKey();
-
-        PerformanceTracker.displayOperationTime(timeStart, "визначення найменшого й найбільшого ключа в TreeMap");
-
-        System.out.println("Найменший ключ: " + minKey + ", найбільший ключ: " + maxKey);
-    }
-
-    /**
-     * Додає новий запис до TreeMap.
-     */
-    void addEntryToTreeMap() {
-        long timeStart = System.nanoTime();
-
-        treeMap.put(KEY_TO_ADD, VALUE_TO_ADD);
-
-        PerformanceTracker.displayOperationTime(timeStart, "додавання запису до TreeMap");
-
-        System.out.println("Додано новий запис: дуб='" + KEY_TO_ADD + "', місце зростання='" + VALUE_TO_ADD + "'");
-    }
-
-    /**
-     * Видаляє запис з TreeMap за ключем.
-     */
-    void removeByKeyFromTreeMap() {
-        long timeStart = System.nanoTime();
-
-        String removedValue = treeMap.remove(KEY_TO_SEARCH_AND_DELETE);
-
-        PerformanceTracker.displayOperationTime(timeStart, "видалення за ключем з TreeMap");
-
-        if (removedValue != null) {
-            System.out.println("Видалено запис з ключем '" + KEY_TO_SEARCH_AND_DELETE + "'. Місце зростання було: " + removedValue);
-        } else {
-            System.out.println("Ключ '" + KEY_TO_SEARCH_AND_DELETE + "' не знайдено для видалення.");
-        }
-    }
-
-    /**
-     * Видаляє записи з TreeMap за значенням.
-     */
-    void removeByValueFromTreeMap() {
-        long timeStart = System.nanoTime();
-
-        List<Oak> keysToRemove = new ArrayList<>();
-        for (Map.Entry<Oak, String> entry : treeMap.entrySet()) {
-            if (VALUE_TO_SEARCH_AND_DELETE.equals(entry.getValue())) {
-                keysToRemove.add(entry.getKey());
-            }
-        }
-
-        for (Oak key : keysToRemove) {
-            treeMap.remove(key);
-        }
-
-        PerformanceTracker.displayOperationTime(timeStart, "видалення за значенням з TreeMap");
-
-        System.out.println("Видалено " + keysToRemove.size() + " записів з місцем зростання '" + VALUE_TO_SEARCH_AND_DELETE + "'");
-    }
-
-    /**
-     * Головний метод для запуску програми.
-     */
     public static void main(String[] args) {
-        // Початкові дані (ключ: Oak, значення: місце зростання).
-        // Map.of() створює незмінну Map, тому з неї створюються копії, які можна змінювати.
-        Map<Oak, String> oaks = Map.of(
-            new Oak("Дуб звичайний", 250), "Софіївка",
-            new Oak("Дуб червоний", 80), "Голосіївський парк",
-            new Oak("Дуб скельний", 120), "Холодний Яр",
-            new Oak("Дуб звичайний", 1000), "Холодний Яр",
-            new Oak("Дуб пухнастий", 60), "Ботанічний сад імені Фоміна",
-            new Oak("Дуб болотяний", 45), "Софіївка",
-            new Oak("Дуб червоний", 35), "Ботанічний сад імені Фоміна",
-            new Oak("Дуб австрійський", 90), "Олександрія",
-            new Oak("Дуб звичайний", 500), "Олександрія",
-            new Oak("Дуб скельний", 300), "Тростянець"
+        Map<Viburnum, String> viburnums = Map.ofEntries(
+                Map.entry(new Viburnum("Червоне намисто", 25.5), "Мирослав"),
+                Map.entry(new Viburnum("Ульгень", 32.0), "Ганна"),
+                Map.entry(new Viburnum("Гранатовий браслет", 40.8), "Роксолана"),
+                Map.entry(new Viburnum("Червоне намисто", 28.3), "Іван"),
+                Map.entry(new Viburnum("Елегантна", 22.1), "Мирослав"),
+                Map.entry(new Viburnum("Соузга", 35.6), "Тетяна"),
+                Map.entry(new Viburnum("Ульгень", 29.4), "Богдана"),
+                Map.entry(new Viburnum("Рубінова", 31.2), "Северин"),
+                Map.entry(new Viburnum("Калинова сопілка", 27.7), "Віра"),
+                Map.entry(new Viburnum("Гранатовий браслет", 38.0), "Святослав")
         );
 
-        HashMap<Oak, String> hashMap = new HashMap<>(oaks);
-        TreeMap<Oak, String> treeMap = new TreeMap<>(oaks);
+        HashMap<Viburnum, String> hashMap = new HashMap<>(viburnums);
+        Hashtable<Viburnum, String> hashtable = new Hashtable<>(viburnums);
 
-        // Створюємо об'єкт і виконуємо операції
-        BasicDataOperationsUsingMap operations = new BasicDataOperationsUsingMap(hashMap, treeMap);
+        BasicDataOperationsUsingMap operations = new BasicDataOperationsUsingMap(hashMap, hashtable);
         operations.executeDataOperations();
     }
 }

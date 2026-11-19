@@ -1,0 +1,135 @@
+Варіант завдання:
+Назва record-класу рослини: Viburnum (калина)
+Характеристики рослини: сорт (String variety), маса грона (Double clusterWeight)
+
+Сортування:
+ - сорт - за спаданням
+ - маса грона - за спаданням
+
+Map<рослина, садівник/садівниця>:
+  Viburnum{variety='Елегантна', clusterWeight=22.1} -> Мирослав
+  Viburnum{variety='Червоне намисто', clusterWeight=28.3} -> Іван
+  Viburnum{variety='Ульгень', clusterWeight=29.4} -> Богдана
+  Viburnum{variety='Рубінова', clusterWeight=31.2} -> Северин
+  Viburnum{variety='Ульгень', clusterWeight=32.0} -> Ганна
+  Viburnum{variety='Гранатовий браслет', clusterWeight=38.0} -> Святослав
+  Viburnum{variety='Соузга', clusterWeight=35.6} -> Тетяна
+  Viburnum{variety='Калинова сопілка', clusterWeight=27.7} -> Віра
+  Viburnum{variety='Червоне намисто', clusterWeight=25.5} -> Мирослав
+  Viburnum{variety='Гранатовий браслет', clusterWeight=40.8} -> Роксолана
+
+Ключ/значення для додавання: Viburnum{variety='Ягідна', clusterWeight=26.0} -> Ганна
+Ключ для пошуку і видалення: Viburnum{variety='Ульгень', clusterWeight=29.4}
+Значення для пошуку і видалення: Мирослав
+Порівняти продуктивність: HashMap з Hashtable
+
+
+========= Тривалість операції 'пошук за ключем у HashMap': 408343 нс =========
+Знайдено за ключем у HashMap Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'пошук за значенням у HashMap': 243870 нс =========
+Пошук за значенням 'Мирослав' у HashMap (binarySearch index): 4
+
+========= Тривалість операції 'пошук min/max ключа в HashMap': 114675 нс =========
+Min ключ у HashMap: Viburnum{variety='Червоне намисто', clusterWeight=28.3}, Max ключ у HashMap: Viburnum{variety='Гранатовий браслет', clusterWeight=38.0}
+Вміст HashMap:
+  Viburnum{variety='Елегантна', clusterWeight=22.1} -> Мирослав
+  Viburnum{variety='Червоне намисто', clusterWeight=28.3} -> Іван
+  Viburnum{variety='Ульгень', clusterWeight=29.4} -> Богдана
+  Viburnum{variety='Рубінова', clusterWeight=31.2} -> Северин
+  Viburnum{variety='Ульгень', clusterWeight=32.0} -> Ганна
+  Viburnum{variety='Гранатовий браслет', clusterWeight=38.0} -> Святослав
+  Viburnum{variety='Соузга', clusterWeight=35.6} -> Тетяна
+  Viburnum{variety='Калинова сопілка', clusterWeight=27.7} -> Віра
+  Viburnum{variety='Червоне намисто', clusterWeight=25.5} -> Мирослав
+  Viburnum{variety='Гранатовий браслет', clusterWeight=40.8} -> Роксолана
+
+========= Тривалість операції 'виведення HashMap': 2167892 нс =========
+
+========= Тривалість операції 'сортування HashMap за значенням': 77776 нс =========
+Вміст HashMap:
+  Viburnum{variety='Елегантна', clusterWeight=22.1} -> Мирослав
+  Viburnum{variety='Червоне намисто', clusterWeight=28.3} -> Іван
+  Viburnum{variety='Ульгень', clusterWeight=29.4} -> Богдана
+  Viburnum{variety='Рубінова', clusterWeight=31.2} -> Северин
+  Viburnum{variety='Ульгень', clusterWeight=32.0} -> Ганна
+  Viburnum{variety='Гранатовий браслет', clusterWeight=38.0} -> Святослав
+  Viburnum{variety='Соузга', clusterWeight=35.6} -> Тетяна
+  Viburnum{variety='Калинова сопілка', clusterWeight=27.7} -> Віра
+  Viburnum{variety='Червоне намисто', clusterWeight=25.5} -> Мирослав
+  Viburnum{variety='Гранатовий браслет', clusterWeight=40.8} -> Роксолана
+
+========= Тривалість операції 'виведення HashMap': 2117267 нс =========
+
+========= Тривалість операції 'пошук за ключем у HashMap': 39531 нс =========
+Знайдено за ключем у HashMap Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'пошук за значенням у HashMap': 56617 нс =========
+Пошук за значенням 'Мирослав' у HashMap (binarySearch index): 4
+
+========= Тривалість операції 'пошук min/max ключа в HashMap': 35103 нс =========
+Min ключ у HashMap: Viburnum{variety='Червоне намисто', clusterWeight=28.3}, Max ключ у HashMap: Viburnum{variety='Гранатовий браслет', clusterWeight=38.0}
+
+========= Тривалість операції 'додавання елемента в HashMap': 30134 нс =========
+Додано запис у HashMap: Viburnum{variety='Ягідна', clusterWeight=26.0} -> Ганна
+
+========= Тривалість операції 'видалення за ключем з HashMap': 43243 нс =========
+Видалено з HashMap за ключем Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'видалення за значенням з HashMap': 50614 нс =========
+Видалено з HashMap 2 записів з садівником (садівницею) 'Мирослав'
+
+========= Тривалість операції 'пошук за ключем у Hashtable': 38273 нс =========
+Знайдено за ключем у Hashtable Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'пошук за значенням у Hashtable': 306477 нс =========
+Пошук за значенням 'Мирослав' у Hashtable (binarySearch index): 4
+
+========= Тривалість операції 'пошук min/max ключа в Hashtable': 173869 нс =========
+Min ключ у Hashtable: Viburnum{variety='Червоне намисто', clusterWeight=28.3}, Max ключ у Hashtable: Viburnum{variety='Гранатовий браслет', clusterWeight=38.0}
+Вміст Hashtable:
+  Viburnum{variety='Гранатовий браслет', clusterWeight=40.8} -> Роксолана
+  Viburnum{variety='Соузга', clusterWeight=35.6} -> Тетяна
+  Viburnum{variety='Червоне намисто', clusterWeight=28.3} -> Іван
+  Viburnum{variety='Калинова сопілка', clusterWeight=27.7} -> Віра
+  Viburnum{variety='Елегантна', clusterWeight=22.1} -> Мирослав
+  Viburnum{variety='Ульгень', clusterWeight=32.0} -> Ганна
+  Viburnum{variety='Червоне намисто', clusterWeight=25.5} -> Мирослав
+  Viburnum{variety='Гранатовий браслет', clusterWeight=38.0} -> Святослав
+  Viburnum{variety='Ульгень', clusterWeight=29.4} -> Богдана
+  Viburnum{variety='Рубінова', clusterWeight=31.2} -> Северин
+
+========= Тривалість операції 'виведення Hashtable': 2335460 нс =========
+
+========= Тривалість операції 'сортування Hashtable за ключами': 452925 нс =========
+Вміст Hashtable:
+  Viburnum{variety='Гранатовий браслет', clusterWeight=40.8} -> Роксолана
+  Viburnum{variety='Соузга', clusterWeight=35.6} -> Тетяна
+  Viburnum{variety='Червоне намисто', clusterWeight=28.3} -> Іван
+  Viburnum{variety='Калинова сопілка', clusterWeight=27.7} -> Віра
+  Viburnum{variety='Ульгень', clusterWeight=32.0} -> Ганна
+  Viburnum{variety='Елегантна', clusterWeight=22.1} -> Мирослав
+  Viburnum{variety='Червоне намисто', clusterWeight=25.5} -> Мирослав
+  Viburnum{variety='Ульгень', clusterWeight=29.4} -> Богдана
+  Viburnum{variety='Гранатовий браслет', clusterWeight=38.0} -> Святослав
+  Viburnum{variety='Рубінова', clusterWeight=31.2} -> Северин
+
+========= Тривалість операції 'виведення Hashtable': 2088185 нс =========
+
+========= Тривалість операції 'пошук за ключем у Hashtable': 29696 нс =========
+Знайдено за ключем у Hashtable Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'пошук за значенням у Hashtable': 54995 нс =========
+Пошук за значенням 'Мирослав' у Hashtable (binarySearch index): 4
+
+========= Тривалість операції 'пошук min/max ключа в Hashtable': 28285 нс =========
+Min ключ у Hashtable: Viburnum{variety='Червоне намисто', clusterWeight=28.3}, Max ключ у Hashtable: Viburnum{variety='Гранатовий браслет', clusterWeight=38.0}
+
+========= Тривалість операції 'додавання елемента в Hashtable': 18068 нс =========
+Додано запис у Hashtable: Viburnum{variety='Ягідна', clusterWeight=26.0} -> Ганна
+
+========= Тривалість операції 'видалення за ключем з Hashtable': 51689 нс =========
+Видалено з Hashtable за ключем Viburnum{variety='Ульгень', clusterWeight=29.4}: Богдана
+
+========= Тривалість операції 'видалення за значенням з Hashtable': 46716 нс =========
+Видалено з Hashtable 2 записів з садівником (садівницею) 'Мирослав'
